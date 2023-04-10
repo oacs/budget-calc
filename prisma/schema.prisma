@@ -66,3 +66,46 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+enum Role {
+  EXPENSE
+  INCOME
+}
+model ExpenseIncomeTypes {
+id String @id @default(cuid())
+  userId            String
+  name          String?
+type Role
+createdAt  DateTime   @default(now())
+updatedAt   DateTime   @default(now())
+}
+
+model transactions {
+id String @id @default(cuid())
+userId String
+typeId String
+amount Float
+  description      String? @db.Text
+transactionDate DateTime
+recurringId String
+createdAt  DateTime   @default(now())
+updatedAt   DateTime   @default(now())
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  NONE
+}
+
+model recurring_transactions {
+id String @id @default(cuid())
+userId String
+frequency Frequency @default(NONE)
+
+startDate  DateTime   
+endDate   DateTime? 
+createdAt  DateTime   @default(now())
+updatedAt   DateTime   @default(now())
+}

@@ -12,15 +12,30 @@ import type { Prisma } from '@prisma/client';
 
 export const AccountScalarFieldEnumSchema = z.enum(['id','userId','type','provider','providerAccountId','refresh_token','access_token','expires_at','token_type','scope','id_token','session_state']);
 
+export const ExpenseIncomeTypesScalarFieldEnumSchema = z.enum(['id','userId','name','type','createdAt','updatedAt']);
+
+export const Recurring_transactionsScalarFieldEnumSchema = z.enum(['id','userId','frequency','startDate','endDate','createdAt','updatedAt']);
+
 export const SessionScalarFieldEnumSchema = z.enum(['id','sessionToken','userId','expires']);
 
 export const SortOrderSchema = z.enum(['asc','desc']);
 
 export const TransactionIsolationLevelSchema = z.enum(['ReadUncommitted','ReadCommitted','RepeatableRead','Serializable']);
 
+export const TransactionsScalarFieldEnumSchema = z.enum(['id','userId','typeId','amount','description','transactionDate','recurringId','createdAt','updatedAt']);
+
 export const UserScalarFieldEnumSchema = z.enum(['id','name','email','emailVerified','image']);
 
 export const VerificationTokenScalarFieldEnumSchema = z.enum(['identifier','token','expires']);
+
+export const RoleSchema = z.enum(['EXPENSE','INCOME']);
+
+export type RoleType = `${z.infer<typeof RoleSchema>}`
+
+export const FrequencySchema = z.enum(['DAILY','WEEKLY','MONTHLY','YEARLY','NONE']);
+
+export type FrequencyType = `${z.infer<typeof FrequencySchema>}`
+
 /////////////////////////////////////////
 // MODELS
 /////////////////////////////////////////
@@ -84,6 +99,55 @@ export const VerificationTokenSchema = z.object({
 })
 
 export type VerificationToken = z.infer<typeof VerificationTokenSchema>
+
+/////////////////////////////////////////
+// EXPENSE INCOME TYPES SCHEMA
+/////////////////////////////////////////
+
+export const ExpenseIncomeTypesSchema = z.object({
+  type: RoleSchema,
+  id: z.string().cuid(),
+  userId: z.string(),
+  name: z.string().nullable(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type ExpenseIncomeTypes = z.infer<typeof ExpenseIncomeTypesSchema>
+
+/////////////////////////////////////////
+// TRANSACTIONS SCHEMA
+/////////////////////////////////////////
+
+export const transactionsSchema = z.object({
+  id: z.string().cuid(),
+  userId: z.string(),
+  typeId: z.string(),
+  amount: z.number(),
+  description: z.string().nullable(),
+  transactionDate: z.coerce.date(),
+  recurringId: z.string(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type transactions = z.infer<typeof transactionsSchema>
+
+/////////////////////////////////////////
+// RECURRING TRANSACTIONS SCHEMA
+/////////////////////////////////////////
+
+export const recurring_transactionsSchema = z.object({
+  frequency: FrequencySchema,
+  id: z.string().cuid(),
+  userId: z.string(),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date().nullable(),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type recurring_transactions = z.infer<typeof recurring_transactionsSchema>
 
 /////////////////////////////////////////
 // SELECT & INCLUDE
@@ -178,6 +242,46 @@ export const VerificationTokenSelectSchema: z.ZodType<Prisma.VerificationTokenSe
   identifier: z.boolean().optional(),
   token: z.boolean().optional(),
   expires: z.boolean().optional(),
+}).strict()
+
+// EXPENSE INCOME TYPES
+//------------------------------------------------------
+
+export const ExpenseIncomeTypesSelectSchema: z.ZodType<Prisma.ExpenseIncomeTypesSelect> = z.object({
+  id: z.boolean().optional(),
+  userId: z.boolean().optional(),
+  name: z.boolean().optional(),
+  type: z.boolean().optional(),
+  createdAt: z.boolean().optional(),
+  updatedAt: z.boolean().optional(),
+}).strict()
+
+// TRANSACTIONS
+//------------------------------------------------------
+
+export const transactionsSelectSchema: z.ZodType<Prisma.transactionsSelect> = z.object({
+  id: z.boolean().optional(),
+  userId: z.boolean().optional(),
+  typeId: z.boolean().optional(),
+  amount: z.boolean().optional(),
+  description: z.boolean().optional(),
+  transactionDate: z.boolean().optional(),
+  recurringId: z.boolean().optional(),
+  createdAt: z.boolean().optional(),
+  updatedAt: z.boolean().optional(),
+}).strict()
+
+// RECURRING TRANSACTIONS
+//------------------------------------------------------
+
+export const recurring_transactionsSelectSchema: z.ZodType<Prisma.recurring_transactionsSelect> = z.object({
+  id: z.boolean().optional(),
+  userId: z.boolean().optional(),
+  frequency: z.boolean().optional(),
+  startDate: z.boolean().optional(),
+  endDate: z.boolean().optional(),
+  createdAt: z.boolean().optional(),
+  updatedAt: z.boolean().optional(),
 }).strict()
 
 
@@ -393,6 +497,171 @@ export const VerificationTokenScalarWhereWithAggregatesInputSchema: z.ZodType<Pr
   identifier: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   token: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
   expires: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+}).strict();
+
+export const ExpenseIncomeTypesWhereInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => ExpenseIncomeTypesWhereInputSchema),z.lazy(() => ExpenseIncomeTypesWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => ExpenseIncomeTypesWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => ExpenseIncomeTypesWhereInputSchema),z.lazy(() => ExpenseIncomeTypesWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  type: z.union([ z.lazy(() => EnumRoleFilterSchema),z.lazy(() => RoleSchema) ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+}).strict();
+
+export const ExpenseIncomeTypesOrderByWithRelationInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const ExpenseIncomeTypesWhereUniqueInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesWhereUniqueInput> = z.object({
+  id: z.string().cuid().optional()
+}).strict();
+
+export const ExpenseIncomeTypesOrderByWithAggregationInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => ExpenseIncomeTypesCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => ExpenseIncomeTypesMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => ExpenseIncomeTypesMinOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const ExpenseIncomeTypesScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => ExpenseIncomeTypesScalarWhereWithAggregatesInputSchema),z.lazy(() => ExpenseIncomeTypesScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => ExpenseIncomeTypesScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => ExpenseIncomeTypesScalarWhereWithAggregatesInputSchema),z.lazy(() => ExpenseIncomeTypesScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  name: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
+  type: z.union([ z.lazy(() => EnumRoleWithAggregatesFilterSchema),z.lazy(() => RoleSchema) ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+}).strict();
+
+export const transactionsWhereInputSchema: z.ZodType<Prisma.transactionsWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => transactionsWhereInputSchema),z.lazy(() => transactionsWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => transactionsWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => transactionsWhereInputSchema),z.lazy(() => transactionsWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  typeId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  amount: z.union([ z.lazy(() => FloatFilterSchema),z.number() ]).optional(),
+  description: z.union([ z.lazy(() => StringNullableFilterSchema),z.string() ]).optional().nullable(),
+  transactionDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  recurringId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+}).strict();
+
+export const transactionsOrderByWithRelationInputSchema: z.ZodType<Prisma.transactionsOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  typeId: z.lazy(() => SortOrderSchema).optional(),
+  amount: z.lazy(() => SortOrderSchema).optional(),
+  description: z.lazy(() => SortOrderSchema).optional(),
+  transactionDate: z.lazy(() => SortOrderSchema).optional(),
+  recurringId: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const transactionsWhereUniqueInputSchema: z.ZodType<Prisma.transactionsWhereUniqueInput> = z.object({
+  id: z.string().cuid().optional()
+}).strict();
+
+export const transactionsOrderByWithAggregationInputSchema: z.ZodType<Prisma.transactionsOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  typeId: z.lazy(() => SortOrderSchema).optional(),
+  amount: z.lazy(() => SortOrderSchema).optional(),
+  description: z.lazy(() => SortOrderSchema).optional(),
+  transactionDate: z.lazy(() => SortOrderSchema).optional(),
+  recurringId: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => transactionsCountOrderByAggregateInputSchema).optional(),
+  _avg: z.lazy(() => transactionsAvgOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => transactionsMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => transactionsMinOrderByAggregateInputSchema).optional(),
+  _sum: z.lazy(() => transactionsSumOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const transactionsScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.transactionsScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => transactionsScalarWhereWithAggregatesInputSchema),z.lazy(() => transactionsScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => transactionsScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => transactionsScalarWhereWithAggregatesInputSchema),z.lazy(() => transactionsScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  typeId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  amount: z.union([ z.lazy(() => FloatWithAggregatesFilterSchema),z.number() ]).optional(),
+  description: z.union([ z.lazy(() => StringNullableWithAggregatesFilterSchema),z.string() ]).optional().nullable(),
+  transactionDate: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  recurringId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+}).strict();
+
+export const recurring_transactionsWhereInputSchema: z.ZodType<Prisma.recurring_transactionsWhereInput> = z.object({
+  AND: z.union([ z.lazy(() => recurring_transactionsWhereInputSchema),z.lazy(() => recurring_transactionsWhereInputSchema).array() ]).optional(),
+  OR: z.lazy(() => recurring_transactionsWhereInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => recurring_transactionsWhereInputSchema),z.lazy(() => recurring_transactionsWhereInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringFilterSchema),z.string() ]).optional(),
+  frequency: z.union([ z.lazy(() => EnumFrequencyFilterSchema),z.lazy(() => FrequencySchema) ]).optional(),
+  startDate: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  endDate: z.union([ z.lazy(() => DateTimeNullableFilterSchema),z.coerce.date() ]).optional().nullable(),
+  createdAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeFilterSchema),z.coerce.date() ]).optional(),
+}).strict();
+
+export const recurring_transactionsOrderByWithRelationInputSchema: z.ZodType<Prisma.recurring_transactionsOrderByWithRelationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  frequency: z.lazy(() => SortOrderSchema).optional(),
+  startDate: z.lazy(() => SortOrderSchema).optional(),
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const recurring_transactionsWhereUniqueInputSchema: z.ZodType<Prisma.recurring_transactionsWhereUniqueInput> = z.object({
+  id: z.string().cuid().optional()
+}).strict();
+
+export const recurring_transactionsOrderByWithAggregationInputSchema: z.ZodType<Prisma.recurring_transactionsOrderByWithAggregationInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  frequency: z.lazy(() => SortOrderSchema).optional(),
+  startDate: z.lazy(() => SortOrderSchema).optional(),
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional(),
+  _count: z.lazy(() => recurring_transactionsCountOrderByAggregateInputSchema).optional(),
+  _max: z.lazy(() => recurring_transactionsMaxOrderByAggregateInputSchema).optional(),
+  _min: z.lazy(() => recurring_transactionsMinOrderByAggregateInputSchema).optional()
+}).strict();
+
+export const recurring_transactionsScalarWhereWithAggregatesInputSchema: z.ZodType<Prisma.recurring_transactionsScalarWhereWithAggregatesInput> = z.object({
+  AND: z.union([ z.lazy(() => recurring_transactionsScalarWhereWithAggregatesInputSchema),z.lazy(() => recurring_transactionsScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  OR: z.lazy(() => recurring_transactionsScalarWhereWithAggregatesInputSchema).array().optional(),
+  NOT: z.union([ z.lazy(() => recurring_transactionsScalarWhereWithAggregatesInputSchema),z.lazy(() => recurring_transactionsScalarWhereWithAggregatesInputSchema).array() ]).optional(),
+  id: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  userId: z.union([ z.lazy(() => StringWithAggregatesFilterSchema),z.string() ]).optional(),
+  frequency: z.union([ z.lazy(() => EnumFrequencyWithAggregatesFilterSchema),z.lazy(() => FrequencySchema) ]).optional(),
+  startDate: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  endDate: z.union([ z.lazy(() => DateTimeNullableWithAggregatesFilterSchema),z.coerce.date() ]).optional().nullable(),
+  createdAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
+  updatedAt: z.union([ z.lazy(() => DateTimeWithAggregatesFilterSchema),z.coerce.date() ]).optional(),
 }).strict();
 
 export const AccountCreateInputSchema: z.ZodType<Prisma.AccountCreateInput> = z.object({
@@ -651,6 +920,223 @@ export const VerificationTokenUncheckedUpdateManyInputSchema: z.ZodType<Prisma.V
   identifier: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   token: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
   expires: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ExpenseIncomeTypesCreateInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesCreateInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  name: z.string().optional().nullable(),
+  type: z.lazy(() => RoleSchema),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const ExpenseIncomeTypesUncheckedCreateInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesUncheckedCreateInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  name: z.string().optional().nullable(),
+  type: z.lazy(() => RoleSchema),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const ExpenseIncomeTypesUpdateInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesUpdateInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  type: z.union([ z.lazy(() => RoleSchema),z.lazy(() => EnumRoleFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ExpenseIncomeTypesUncheckedUpdateInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesUncheckedUpdateInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  type: z.union([ z.lazy(() => RoleSchema),z.lazy(() => EnumRoleFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ExpenseIncomeTypesCreateManyInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesCreateManyInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  name: z.string().optional().nullable(),
+  type: z.lazy(() => RoleSchema),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const ExpenseIncomeTypesUpdateManyMutationInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesUpdateManyMutationInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  type: z.union([ z.lazy(() => RoleSchema),z.lazy(() => EnumRoleFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const ExpenseIncomeTypesUncheckedUpdateManyInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesUncheckedUpdateManyInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  name: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  type: z.union([ z.lazy(() => RoleSchema),z.lazy(() => EnumRoleFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const transactionsCreateInputSchema: z.ZodType<Prisma.transactionsCreateInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  typeId: z.string(),
+  amount: z.number(),
+  description: z.string().optional().nullable(),
+  transactionDate: z.coerce.date(),
+  recurringId: z.string(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const transactionsUncheckedCreateInputSchema: z.ZodType<Prisma.transactionsUncheckedCreateInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  typeId: z.string(),
+  amount: z.number(),
+  description: z.string().optional().nullable(),
+  transactionDate: z.coerce.date(),
+  recurringId: z.string(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const transactionsUpdateInputSchema: z.ZodType<Prisma.transactionsUpdateInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  typeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  amount: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  transactionDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  recurringId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const transactionsUncheckedUpdateInputSchema: z.ZodType<Prisma.transactionsUncheckedUpdateInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  typeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  amount: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  transactionDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  recurringId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const transactionsCreateManyInputSchema: z.ZodType<Prisma.transactionsCreateManyInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  typeId: z.string(),
+  amount: z.number(),
+  description: z.string().optional().nullable(),
+  transactionDate: z.coerce.date(),
+  recurringId: z.string(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const transactionsUpdateManyMutationInputSchema: z.ZodType<Prisma.transactionsUpdateManyMutationInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  typeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  amount: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  transactionDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  recurringId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const transactionsUncheckedUpdateManyInputSchema: z.ZodType<Prisma.transactionsUncheckedUpdateManyInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  typeId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  amount: z.union([ z.number(),z.lazy(() => FloatFieldUpdateOperationsInputSchema) ]).optional(),
+  description: z.union([ z.string(),z.lazy(() => NullableStringFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  transactionDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  recurringId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const recurring_transactionsCreateInputSchema: z.ZodType<Prisma.recurring_transactionsCreateInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  frequency: z.lazy(() => FrequencySchema).optional(),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const recurring_transactionsUncheckedCreateInputSchema: z.ZodType<Prisma.recurring_transactionsUncheckedCreateInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  frequency: z.lazy(() => FrequencySchema).optional(),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const recurring_transactionsUpdateInputSchema: z.ZodType<Prisma.recurring_transactionsUpdateInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  frequency: z.union([ z.lazy(() => FrequencySchema),z.lazy(() => EnumFrequencyFieldUpdateOperationsInputSchema) ]).optional(),
+  startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  endDate: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const recurring_transactionsUncheckedUpdateInputSchema: z.ZodType<Prisma.recurring_transactionsUncheckedUpdateInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  frequency: z.union([ z.lazy(() => FrequencySchema),z.lazy(() => EnumFrequencyFieldUpdateOperationsInputSchema) ]).optional(),
+  startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  endDate: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const recurring_transactionsCreateManyInputSchema: z.ZodType<Prisma.recurring_transactionsCreateManyInput> = z.object({
+  id: z.string().cuid().optional(),
+  userId: z.string(),
+  frequency: z.lazy(() => FrequencySchema).optional(),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date().optional().nullable(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional()
+}).strict();
+
+export const recurring_transactionsUpdateManyMutationInputSchema: z.ZodType<Prisma.recurring_transactionsUpdateManyMutationInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  frequency: z.union([ z.lazy(() => FrequencySchema),z.lazy(() => EnumFrequencyFieldUpdateOperationsInputSchema) ]).optional(),
+  startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  endDate: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+}).strict();
+
+export const recurring_transactionsUncheckedUpdateManyInputSchema: z.ZodType<Prisma.recurring_transactionsUncheckedUpdateManyInput> = z.object({
+  id: z.union([ z.string().cuid(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  userId: z.union([ z.string(),z.lazy(() => StringFieldUpdateOperationsInputSchema) ]).optional(),
+  frequency: z.union([ z.lazy(() => FrequencySchema),z.lazy(() => EnumFrequencyFieldUpdateOperationsInputSchema) ]).optional(),
+  startDate: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  endDate: z.union([ z.coerce.date(),z.lazy(() => NullableDateTimeFieldUpdateOperationsInputSchema) ]).optional().nullable(),
+  createdAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
+  updatedAt: z.union([ z.coerce.date(),z.lazy(() => DateTimeFieldUpdateOperationsInputSchema) ]).optional(),
 }).strict();
 
 export const StringFilterSchema: z.ZodType<Prisma.StringFilter> = z.object({
@@ -943,6 +1429,168 @@ export const VerificationTokenMinOrderByAggregateInputSchema: z.ZodType<Prisma.V
   expires: z.lazy(() => SortOrderSchema).optional()
 }).strict();
 
+export const EnumRoleFilterSchema: z.ZodType<Prisma.EnumRoleFilter> = z.object({
+  equals: z.lazy(() => RoleSchema).optional(),
+  in: z.lazy(() => RoleSchema).array().optional(),
+  notIn: z.lazy(() => RoleSchema).array().optional(),
+  not: z.union([ z.lazy(() => RoleSchema),z.lazy(() => NestedEnumRoleFilterSchema) ]).optional(),
+}).strict();
+
+export const ExpenseIncomeTypesCountOrderByAggregateInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const ExpenseIncomeTypesMaxOrderByAggregateInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const ExpenseIncomeTypesMinOrderByAggregateInputSchema: z.ZodType<Prisma.ExpenseIncomeTypesMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  name: z.lazy(() => SortOrderSchema).optional(),
+  type: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const EnumRoleWithAggregatesFilterSchema: z.ZodType<Prisma.EnumRoleWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => RoleSchema).optional(),
+  in: z.lazy(() => RoleSchema).array().optional(),
+  notIn: z.lazy(() => RoleSchema).array().optional(),
+  not: z.union([ z.lazy(() => RoleSchema),z.lazy(() => NestedEnumRoleWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumRoleFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumRoleFilterSchema).optional()
+}).strict();
+
+export const FloatFilterSchema: z.ZodType<Prisma.FloatFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedFloatFilterSchema) ]).optional(),
+}).strict();
+
+export const transactionsCountOrderByAggregateInputSchema: z.ZodType<Prisma.transactionsCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  typeId: z.lazy(() => SortOrderSchema).optional(),
+  amount: z.lazy(() => SortOrderSchema).optional(),
+  description: z.lazy(() => SortOrderSchema).optional(),
+  transactionDate: z.lazy(() => SortOrderSchema).optional(),
+  recurringId: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const transactionsAvgOrderByAggregateInputSchema: z.ZodType<Prisma.transactionsAvgOrderByAggregateInput> = z.object({
+  amount: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const transactionsMaxOrderByAggregateInputSchema: z.ZodType<Prisma.transactionsMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  typeId: z.lazy(() => SortOrderSchema).optional(),
+  amount: z.lazy(() => SortOrderSchema).optional(),
+  description: z.lazy(() => SortOrderSchema).optional(),
+  transactionDate: z.lazy(() => SortOrderSchema).optional(),
+  recurringId: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const transactionsMinOrderByAggregateInputSchema: z.ZodType<Prisma.transactionsMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  typeId: z.lazy(() => SortOrderSchema).optional(),
+  amount: z.lazy(() => SortOrderSchema).optional(),
+  description: z.lazy(() => SortOrderSchema).optional(),
+  transactionDate: z.lazy(() => SortOrderSchema).optional(),
+  recurringId: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const transactionsSumOrderByAggregateInputSchema: z.ZodType<Prisma.transactionsSumOrderByAggregateInput> = z.object({
+  amount: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const FloatWithAggregatesFilterSchema: z.ZodType<Prisma.FloatWithAggregatesFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedFloatWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _sum: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _min: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _max: z.lazy(() => NestedFloatFilterSchema).optional()
+}).strict();
+
+export const EnumFrequencyFilterSchema: z.ZodType<Prisma.EnumFrequencyFilter> = z.object({
+  equals: z.lazy(() => FrequencySchema).optional(),
+  in: z.lazy(() => FrequencySchema).array().optional(),
+  notIn: z.lazy(() => FrequencySchema).array().optional(),
+  not: z.union([ z.lazy(() => FrequencySchema),z.lazy(() => NestedEnumFrequencyFilterSchema) ]).optional(),
+}).strict();
+
+export const recurring_transactionsCountOrderByAggregateInputSchema: z.ZodType<Prisma.recurring_transactionsCountOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  frequency: z.lazy(() => SortOrderSchema).optional(),
+  startDate: z.lazy(() => SortOrderSchema).optional(),
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const recurring_transactionsMaxOrderByAggregateInputSchema: z.ZodType<Prisma.recurring_transactionsMaxOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  frequency: z.lazy(() => SortOrderSchema).optional(),
+  startDate: z.lazy(() => SortOrderSchema).optional(),
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const recurring_transactionsMinOrderByAggregateInputSchema: z.ZodType<Prisma.recurring_transactionsMinOrderByAggregateInput> = z.object({
+  id: z.lazy(() => SortOrderSchema).optional(),
+  userId: z.lazy(() => SortOrderSchema).optional(),
+  frequency: z.lazy(() => SortOrderSchema).optional(),
+  startDate: z.lazy(() => SortOrderSchema).optional(),
+  endDate: z.lazy(() => SortOrderSchema).optional(),
+  createdAt: z.lazy(() => SortOrderSchema).optional(),
+  updatedAt: z.lazy(() => SortOrderSchema).optional()
+}).strict();
+
+export const EnumFrequencyWithAggregatesFilterSchema: z.ZodType<Prisma.EnumFrequencyWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => FrequencySchema).optional(),
+  in: z.lazy(() => FrequencySchema).array().optional(),
+  notIn: z.lazy(() => FrequencySchema).array().optional(),
+  not: z.union([ z.lazy(() => FrequencySchema),z.lazy(() => NestedEnumFrequencyWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumFrequencyFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumFrequencyFilterSchema).optional()
+}).strict();
+
 export const UserCreateNestedOneWithoutAccountsInputSchema: z.ZodType<Prisma.UserCreateNestedOneWithoutAccountsInput> = z.object({
   create: z.union([ z.lazy(() => UserCreateWithoutAccountsInputSchema),z.lazy(() => UserUncheckedCreateWithoutAccountsInputSchema) ]).optional(),
   connectOrCreate: z.lazy(() => UserCreateOrConnectWithoutAccountsInputSchema).optional(),
@@ -1077,6 +1725,22 @@ export const SessionUncheckedUpdateManyWithoutUserNestedInputSchema: z.ZodType<P
   update: z.union([ z.lazy(() => SessionUpdateWithWhereUniqueWithoutUserInputSchema),z.lazy(() => SessionUpdateWithWhereUniqueWithoutUserInputSchema).array() ]).optional(),
   updateMany: z.union([ z.lazy(() => SessionUpdateManyWithWhereWithoutUserInputSchema),z.lazy(() => SessionUpdateManyWithWhereWithoutUserInputSchema).array() ]).optional(),
   deleteMany: z.union([ z.lazy(() => SessionScalarWhereInputSchema),z.lazy(() => SessionScalarWhereInputSchema).array() ]).optional(),
+}).strict();
+
+export const EnumRoleFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumRoleFieldUpdateOperationsInput> = z.object({
+  set: z.lazy(() => RoleSchema).optional()
+}).strict();
+
+export const FloatFieldUpdateOperationsInputSchema: z.ZodType<Prisma.FloatFieldUpdateOperationsInput> = z.object({
+  set: z.number().optional(),
+  increment: z.number().optional(),
+  decrement: z.number().optional(),
+  multiply: z.number().optional(),
+  divide: z.number().optional()
+}).strict();
+
+export const EnumFrequencyFieldUpdateOperationsInputSchema: z.ZodType<Prisma.EnumFrequencyFieldUpdateOperationsInput> = z.object({
+  set: z.lazy(() => FrequencySchema).optional()
 }).strict();
 
 export const NestedStringFilterSchema: z.ZodType<Prisma.NestedStringFilter> = z.object({
@@ -1238,6 +1902,67 @@ export const NestedDateTimeNullableWithAggregatesFilterSchema: z.ZodType<Prisma.
   _count: z.lazy(() => NestedIntNullableFilterSchema).optional(),
   _min: z.lazy(() => NestedDateTimeNullableFilterSchema).optional(),
   _max: z.lazy(() => NestedDateTimeNullableFilterSchema).optional()
+}).strict();
+
+export const NestedEnumRoleFilterSchema: z.ZodType<Prisma.NestedEnumRoleFilter> = z.object({
+  equals: z.lazy(() => RoleSchema).optional(),
+  in: z.lazy(() => RoleSchema).array().optional(),
+  notIn: z.lazy(() => RoleSchema).array().optional(),
+  not: z.union([ z.lazy(() => RoleSchema),z.lazy(() => NestedEnumRoleFilterSchema) ]).optional(),
+}).strict();
+
+export const NestedEnumRoleWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumRoleWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => RoleSchema).optional(),
+  in: z.lazy(() => RoleSchema).array().optional(),
+  notIn: z.lazy(() => RoleSchema).array().optional(),
+  not: z.union([ z.lazy(() => RoleSchema),z.lazy(() => NestedEnumRoleWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumRoleFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumRoleFilterSchema).optional()
+}).strict();
+
+export const NestedFloatFilterSchema: z.ZodType<Prisma.NestedFloatFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedFloatFilterSchema) ]).optional(),
+}).strict();
+
+export const NestedFloatWithAggregatesFilterSchema: z.ZodType<Prisma.NestedFloatWithAggregatesFilter> = z.object({
+  equals: z.number().optional(),
+  in: z.number().array().optional(),
+  notIn: z.number().array().optional(),
+  lt: z.number().optional(),
+  lte: z.number().optional(),
+  gt: z.number().optional(),
+  gte: z.number().optional(),
+  not: z.union([ z.number(),z.lazy(() => NestedFloatWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _avg: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _sum: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _min: z.lazy(() => NestedFloatFilterSchema).optional(),
+  _max: z.lazy(() => NestedFloatFilterSchema).optional()
+}).strict();
+
+export const NestedEnumFrequencyFilterSchema: z.ZodType<Prisma.NestedEnumFrequencyFilter> = z.object({
+  equals: z.lazy(() => FrequencySchema).optional(),
+  in: z.lazy(() => FrequencySchema).array().optional(),
+  notIn: z.lazy(() => FrequencySchema).array().optional(),
+  not: z.union([ z.lazy(() => FrequencySchema),z.lazy(() => NestedEnumFrequencyFilterSchema) ]).optional(),
+}).strict();
+
+export const NestedEnumFrequencyWithAggregatesFilterSchema: z.ZodType<Prisma.NestedEnumFrequencyWithAggregatesFilter> = z.object({
+  equals: z.lazy(() => FrequencySchema).optional(),
+  in: z.lazy(() => FrequencySchema).array().optional(),
+  notIn: z.lazy(() => FrequencySchema).array().optional(),
+  not: z.union([ z.lazy(() => FrequencySchema),z.lazy(() => NestedEnumFrequencyWithAggregatesFilterSchema) ]).optional(),
+  _count: z.lazy(() => NestedIntFilterSchema).optional(),
+  _min: z.lazy(() => NestedEnumFrequencyFilterSchema).optional(),
+  _max: z.lazy(() => NestedEnumFrequencyFilterSchema).optional()
 }).strict();
 
 export const UserCreateWithoutAccountsInputSchema: z.ZodType<Prisma.UserCreateWithoutAccountsInput> = z.object({
@@ -1779,6 +2504,177 @@ export const VerificationTokenFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.Veri
   where: VerificationTokenWhereUniqueInputSchema,
 }).strict()
 
+export const ExpenseIncomeTypesFindFirstArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesFindFirstArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  where: ExpenseIncomeTypesWhereInputSchema.optional(),
+  orderBy: z.union([ ExpenseIncomeTypesOrderByWithRelationInputSchema.array(),ExpenseIncomeTypesOrderByWithRelationInputSchema ]).optional(),
+  cursor: ExpenseIncomeTypesWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: ExpenseIncomeTypesScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const ExpenseIncomeTypesFindFirstOrThrowArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesFindFirstOrThrowArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  where: ExpenseIncomeTypesWhereInputSchema.optional(),
+  orderBy: z.union([ ExpenseIncomeTypesOrderByWithRelationInputSchema.array(),ExpenseIncomeTypesOrderByWithRelationInputSchema ]).optional(),
+  cursor: ExpenseIncomeTypesWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: ExpenseIncomeTypesScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const ExpenseIncomeTypesFindManyArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesFindManyArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  where: ExpenseIncomeTypesWhereInputSchema.optional(),
+  orderBy: z.union([ ExpenseIncomeTypesOrderByWithRelationInputSchema.array(),ExpenseIncomeTypesOrderByWithRelationInputSchema ]).optional(),
+  cursor: ExpenseIncomeTypesWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: ExpenseIncomeTypesScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const ExpenseIncomeTypesAggregateArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesAggregateArgs> = z.object({
+  where: ExpenseIncomeTypesWhereInputSchema.optional(),
+  orderBy: z.union([ ExpenseIncomeTypesOrderByWithRelationInputSchema.array(),ExpenseIncomeTypesOrderByWithRelationInputSchema ]).optional(),
+  cursor: ExpenseIncomeTypesWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict()
+
+export const ExpenseIncomeTypesGroupByArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesGroupByArgs> = z.object({
+  where: ExpenseIncomeTypesWhereInputSchema.optional(),
+  orderBy: z.union([ ExpenseIncomeTypesOrderByWithAggregationInputSchema.array(),ExpenseIncomeTypesOrderByWithAggregationInputSchema ]).optional(),
+  by: ExpenseIncomeTypesScalarFieldEnumSchema.array(),
+  having: ExpenseIncomeTypesScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict()
+
+export const ExpenseIncomeTypesFindUniqueArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesFindUniqueArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  where: ExpenseIncomeTypesWhereUniqueInputSchema,
+}).strict()
+
+export const ExpenseIncomeTypesFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesFindUniqueOrThrowArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  where: ExpenseIncomeTypesWhereUniqueInputSchema,
+}).strict()
+
+export const transactionsFindFirstArgsSchema: z.ZodType<Prisma.transactionsFindFirstArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  where: transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ transactionsOrderByWithRelationInputSchema.array(),transactionsOrderByWithRelationInputSchema ]).optional(),
+  cursor: transactionsWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: TransactionsScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const transactionsFindFirstOrThrowArgsSchema: z.ZodType<Prisma.transactionsFindFirstOrThrowArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  where: transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ transactionsOrderByWithRelationInputSchema.array(),transactionsOrderByWithRelationInputSchema ]).optional(),
+  cursor: transactionsWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: TransactionsScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const transactionsFindManyArgsSchema: z.ZodType<Prisma.transactionsFindManyArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  where: transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ transactionsOrderByWithRelationInputSchema.array(),transactionsOrderByWithRelationInputSchema ]).optional(),
+  cursor: transactionsWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: TransactionsScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const transactionsAggregateArgsSchema: z.ZodType<Prisma.transactionsAggregateArgs> = z.object({
+  where: transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ transactionsOrderByWithRelationInputSchema.array(),transactionsOrderByWithRelationInputSchema ]).optional(),
+  cursor: transactionsWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict()
+
+export const transactionsGroupByArgsSchema: z.ZodType<Prisma.transactionsGroupByArgs> = z.object({
+  where: transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ transactionsOrderByWithAggregationInputSchema.array(),transactionsOrderByWithAggregationInputSchema ]).optional(),
+  by: TransactionsScalarFieldEnumSchema.array(),
+  having: transactionsScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict()
+
+export const transactionsFindUniqueArgsSchema: z.ZodType<Prisma.transactionsFindUniqueArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  where: transactionsWhereUniqueInputSchema,
+}).strict()
+
+export const transactionsFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.transactionsFindUniqueOrThrowArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  where: transactionsWhereUniqueInputSchema,
+}).strict()
+
+export const recurring_transactionsFindFirstArgsSchema: z.ZodType<Prisma.recurring_transactionsFindFirstArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  where: recurring_transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ recurring_transactionsOrderByWithRelationInputSchema.array(),recurring_transactionsOrderByWithRelationInputSchema ]).optional(),
+  cursor: recurring_transactionsWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: Recurring_transactionsScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const recurring_transactionsFindFirstOrThrowArgsSchema: z.ZodType<Prisma.recurring_transactionsFindFirstOrThrowArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  where: recurring_transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ recurring_transactionsOrderByWithRelationInputSchema.array(),recurring_transactionsOrderByWithRelationInputSchema ]).optional(),
+  cursor: recurring_transactionsWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: Recurring_transactionsScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const recurring_transactionsFindManyArgsSchema: z.ZodType<Prisma.recurring_transactionsFindManyArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  where: recurring_transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ recurring_transactionsOrderByWithRelationInputSchema.array(),recurring_transactionsOrderByWithRelationInputSchema ]).optional(),
+  cursor: recurring_transactionsWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+  distinct: Recurring_transactionsScalarFieldEnumSchema.array().optional(),
+}).strict()
+
+export const recurring_transactionsAggregateArgsSchema: z.ZodType<Prisma.recurring_transactionsAggregateArgs> = z.object({
+  where: recurring_transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ recurring_transactionsOrderByWithRelationInputSchema.array(),recurring_transactionsOrderByWithRelationInputSchema ]).optional(),
+  cursor: recurring_transactionsWhereUniqueInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict()
+
+export const recurring_transactionsGroupByArgsSchema: z.ZodType<Prisma.recurring_transactionsGroupByArgs> = z.object({
+  where: recurring_transactionsWhereInputSchema.optional(),
+  orderBy: z.union([ recurring_transactionsOrderByWithAggregationInputSchema.array(),recurring_transactionsOrderByWithAggregationInputSchema ]).optional(),
+  by: Recurring_transactionsScalarFieldEnumSchema.array(),
+  having: recurring_transactionsScalarWhereWithAggregatesInputSchema.optional(),
+  take: z.number().optional(),
+  skip: z.number().optional(),
+}).strict()
+
+export const recurring_transactionsFindUniqueArgsSchema: z.ZodType<Prisma.recurring_transactionsFindUniqueArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  where: recurring_transactionsWhereUniqueInputSchema,
+}).strict()
+
+export const recurring_transactionsFindUniqueOrThrowArgsSchema: z.ZodType<Prisma.recurring_transactionsFindUniqueOrThrowArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  where: recurring_transactionsWhereUniqueInputSchema,
+}).strict()
+
 export const AccountCreateArgsSchema: z.ZodType<Prisma.AccountCreateArgs> = z.object({
   select: AccountSelectSchema.optional(),
   include: AccountIncludeSchema.optional(),
@@ -1937,4 +2833,115 @@ export const VerificationTokenUpdateManyArgsSchema: z.ZodType<Prisma.Verificatio
 
 export const VerificationTokenDeleteManyArgsSchema: z.ZodType<Prisma.VerificationTokenDeleteManyArgs> = z.object({
   where: VerificationTokenWhereInputSchema.optional(),
+}).strict()
+
+export const ExpenseIncomeTypesCreateArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesCreateArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  data: z.union([ ExpenseIncomeTypesCreateInputSchema,ExpenseIncomeTypesUncheckedCreateInputSchema ]),
+}).strict()
+
+export const ExpenseIncomeTypesUpsertArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesUpsertArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  where: ExpenseIncomeTypesWhereUniqueInputSchema,
+  create: z.union([ ExpenseIncomeTypesCreateInputSchema,ExpenseIncomeTypesUncheckedCreateInputSchema ]),
+  update: z.union([ ExpenseIncomeTypesUpdateInputSchema,ExpenseIncomeTypesUncheckedUpdateInputSchema ]),
+}).strict()
+
+export const ExpenseIncomeTypesCreateManyArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesCreateManyArgs> = z.object({
+  data: z.union([ ExpenseIncomeTypesCreateManyInputSchema,ExpenseIncomeTypesCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict()
+
+export const ExpenseIncomeTypesDeleteArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesDeleteArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  where: ExpenseIncomeTypesWhereUniqueInputSchema,
+}).strict()
+
+export const ExpenseIncomeTypesUpdateArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesUpdateArgs> = z.object({
+  select: ExpenseIncomeTypesSelectSchema.optional(),
+  data: z.union([ ExpenseIncomeTypesUpdateInputSchema,ExpenseIncomeTypesUncheckedUpdateInputSchema ]),
+  where: ExpenseIncomeTypesWhereUniqueInputSchema,
+}).strict()
+
+export const ExpenseIncomeTypesUpdateManyArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesUpdateManyArgs> = z.object({
+  data: z.union([ ExpenseIncomeTypesUpdateManyMutationInputSchema,ExpenseIncomeTypesUncheckedUpdateManyInputSchema ]),
+  where: ExpenseIncomeTypesWhereInputSchema.optional(),
+}).strict()
+
+export const ExpenseIncomeTypesDeleteManyArgsSchema: z.ZodType<Prisma.ExpenseIncomeTypesDeleteManyArgs> = z.object({
+  where: ExpenseIncomeTypesWhereInputSchema.optional(),
+}).strict()
+
+export const transactionsCreateArgsSchema: z.ZodType<Prisma.transactionsCreateArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  data: z.union([ transactionsCreateInputSchema,transactionsUncheckedCreateInputSchema ]),
+}).strict()
+
+export const transactionsUpsertArgsSchema: z.ZodType<Prisma.transactionsUpsertArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  where: transactionsWhereUniqueInputSchema,
+  create: z.union([ transactionsCreateInputSchema,transactionsUncheckedCreateInputSchema ]),
+  update: z.union([ transactionsUpdateInputSchema,transactionsUncheckedUpdateInputSchema ]),
+}).strict()
+
+export const transactionsCreateManyArgsSchema: z.ZodType<Prisma.transactionsCreateManyArgs> = z.object({
+  data: z.union([ transactionsCreateManyInputSchema,transactionsCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict()
+
+export const transactionsDeleteArgsSchema: z.ZodType<Prisma.transactionsDeleteArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  where: transactionsWhereUniqueInputSchema,
+}).strict()
+
+export const transactionsUpdateArgsSchema: z.ZodType<Prisma.transactionsUpdateArgs> = z.object({
+  select: transactionsSelectSchema.optional(),
+  data: z.union([ transactionsUpdateInputSchema,transactionsUncheckedUpdateInputSchema ]),
+  where: transactionsWhereUniqueInputSchema,
+}).strict()
+
+export const transactionsUpdateManyArgsSchema: z.ZodType<Prisma.transactionsUpdateManyArgs> = z.object({
+  data: z.union([ transactionsUpdateManyMutationInputSchema,transactionsUncheckedUpdateManyInputSchema ]),
+  where: transactionsWhereInputSchema.optional(),
+}).strict()
+
+export const transactionsDeleteManyArgsSchema: z.ZodType<Prisma.transactionsDeleteManyArgs> = z.object({
+  where: transactionsWhereInputSchema.optional(),
+}).strict()
+
+export const recurring_transactionsCreateArgsSchema: z.ZodType<Prisma.recurring_transactionsCreateArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  data: z.union([ recurring_transactionsCreateInputSchema,recurring_transactionsUncheckedCreateInputSchema ]),
+}).strict()
+
+export const recurring_transactionsUpsertArgsSchema: z.ZodType<Prisma.recurring_transactionsUpsertArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  where: recurring_transactionsWhereUniqueInputSchema,
+  create: z.union([ recurring_transactionsCreateInputSchema,recurring_transactionsUncheckedCreateInputSchema ]),
+  update: z.union([ recurring_transactionsUpdateInputSchema,recurring_transactionsUncheckedUpdateInputSchema ]),
+}).strict()
+
+export const recurring_transactionsCreateManyArgsSchema: z.ZodType<Prisma.recurring_transactionsCreateManyArgs> = z.object({
+  data: z.union([ recurring_transactionsCreateManyInputSchema,recurring_transactionsCreateManyInputSchema.array() ]),
+  skipDuplicates: z.boolean().optional(),
+}).strict()
+
+export const recurring_transactionsDeleteArgsSchema: z.ZodType<Prisma.recurring_transactionsDeleteArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  where: recurring_transactionsWhereUniqueInputSchema,
+}).strict()
+
+export const recurring_transactionsUpdateArgsSchema: z.ZodType<Prisma.recurring_transactionsUpdateArgs> = z.object({
+  select: recurring_transactionsSelectSchema.optional(),
+  data: z.union([ recurring_transactionsUpdateInputSchema,recurring_transactionsUncheckedUpdateInputSchema ]),
+  where: recurring_transactionsWhereUniqueInputSchema,
+}).strict()
+
+export const recurring_transactionsUpdateManyArgsSchema: z.ZodType<Prisma.recurring_transactionsUpdateManyArgs> = z.object({
+  data: z.union([ recurring_transactionsUpdateManyMutationInputSchema,recurring_transactionsUncheckedUpdateManyInputSchema ]),
+  where: recurring_transactionsWhereInputSchema.optional(),
+}).strict()
+
+export const recurring_transactionsDeleteManyArgsSchema: z.ZodType<Prisma.recurring_transactionsDeleteManyArgs> = z.object({
+  where: recurring_transactionsWhereInputSchema.optional(),
 }).strict()
