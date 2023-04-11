@@ -118,7 +118,7 @@ enum Frequency {
 
 model RecurringTransactions {
   id        String    @id @default(cuid())
-  userId    String
+  userId    String /// @zod.custom.omit([model, input])
   frequency Frequency @default(NONE)
   startDate DateTime
   endDate   DateTime?
