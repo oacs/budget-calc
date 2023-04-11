@@ -4,7 +4,7 @@ import {
 } from "prisma/generated/zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
-export const transaction = createTRPCRouter({
+export const transactionRouter = createTRPCRouter({
   add: protectedProcedure
     .input(TransactionsCreateArgsSchema)
     .mutation(({ input, ctx }) => {
