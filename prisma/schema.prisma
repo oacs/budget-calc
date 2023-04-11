@@ -10,12 +10,12 @@ generator zod {
 }
 
 datasource db {
-  provider = "mysql"
+  provider     = "mysql"
   // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
   // Further reading:
   // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
   // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-  url      = env("DATABASE_URL")
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
@@ -50,13 +50,16 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
+  id                    String                  @id @default(cuid())
+  name                  String?
+  email                 String?                 @unique
+  emailVerified         DateTime?
+  image                 String?
+  accounts              Account[]
+  sessions              Session[]
+  transactions          Transactions[]
+  transactionTypes      TransactionTypes[]
+  recurringTransactions RecurringTransactions[]
 }
 
 model VerificationToken {
@@ -66,29 +69,43 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
 enum Role {
   EXPENSE
   INCOME
 }
+
 model TransactionTypes {
-  id String @id @default(cuid())
-  userId            String
-  name          String?
-  type Role
-  createdAt  DateTime   @default(now())
-  updatedAt   DateTime   @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  name      String?
+  type      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  transactions Transactions[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Transactions {
-  id String @id @default(cuid())
-  userId String
-  typeId String
-  amount Float
-  description      String? @db.Text
+  id              String   @id @default(cuid())
+  userId          String
+  typeId          String
+  amount          Float
+  description     String?  @db.Text
   transactionDate DateTime
-  recurringId String
-  createdAt  DateTime   @default(now())
-  updatedAt   DateTime   @default(now())
+  recurringId     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type TransactionTypes @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([typeId])
 }
 
 enum Frequency {
@@ -100,11 +117,15 @@ enum Frequency {
 }
 
 model RecurringTransactions {
-  id String @id @default(cuid())
-  userId String
+  id        String    @id @default(cuid())
+  userId    String
   frequency Frequency @default(NONE)
-  startDate  DateTime   
-  endDate   DateTime? 
-  createdAt  DateTime   @default(now())
-  updatedAt   DateTime   @default(now())
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
