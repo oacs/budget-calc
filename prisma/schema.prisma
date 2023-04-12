@@ -1,25 +1,24 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 generator zod {
-  provider = "zod-prisma-types"
+  provider                         = "zod-prisma-types"
+  createInputTypes                 = "false"
+  useMultipleFiles                 = "false"
+  createModelTypes                 = "true"
+  addIncludeType                   = "false"
+  addInputTypeValidation           = "false"
+  createOptionalDefaultValuesTypes = "true"
+  addSelectType                    = "false"
 }
 
 datasource db {
   provider     = "mysql"
-  // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-  // Further reading:
-  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
-// Necessary for Next auth
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -50,16 +49,16 @@ model Session {
 }
 
 model User {
-  id                    String                  @id @default(cuid())
+  id                    String                 @id @default(cuid())
   name                  String?
-  email                 String?                 @unique
+  email                 String?                @unique
   emailVerified         DateTime?
   image                 String?
   accounts              Account[]
   sessions              Session[]
-  transactions          Transactions[]
-  transactionTypes      TransactionTypes[]
-  recurringTransactions RecurringTransactions[]
+  transactions          Transaction[]
+  transactionCategories TransactionCategory[]
+  recurringTransactions RecurringTransaction[]
 }
 
 model VerificationToken {
@@ -70,42 +69,59 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-enum Role {
-  EXPENSE
-  INCOME
-}
-
-model TransactionTypes {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String?
-  type      Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  transactions Transactions[]
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model TransactionCategory {
+  id                   String                 @id @default(cuid())
+  userId               String
+  name                 String?
+  type                 TypeTransaction
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @default(now())
+  transactions         Transaction[]
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  RecurringTransaction RecurringTransaction[]
 
   @@index([userId])
 }
 
-model Transactions {
-  id              String   @id @default(cuid())
+model Transaction {
+  id              String               @id @default(cuid())
   userId          String
-  typeId          String
+  categoryId      String?
+  type            TypeTransaction
   amount          Float
-  description     String?  @db.Text
+  description     String?              @db.Text
   transactionDate DateTime
   recurringId     String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now())
-
-  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type TransactionTypes @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @default(now())
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        TransactionCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([typeId])
+  @@index([categoryId])
+}
+
+model RecurringTransaction {
+  id         String               @id @default(cuid())
+  /// @zod.custom.omit([input])
+  userId     String
+  categoryId String?
+  type       TypeTransaction
+  frequency  Frequency            @default(NONE)
+  startDate  DateTime
+  endDate    DateTime?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @default(now())
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   TransactionCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+enum TypeTransaction {
+  EXPENSE
+  INCOME
 }
 
 enum Frequency {
@@ -114,18 +130,4 @@ enum Frequency {
   MONTHLY
   YEARLY
   NONE
-}
-
-model RecurringTransactions {
-  id        String    @id @default(cuid())
-  userId    String /// @zod.custom.omit([model, input])
-  frequency Frequency @default(NONE)
-  startDate DateTime
-  endDate   DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
